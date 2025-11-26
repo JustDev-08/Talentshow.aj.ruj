@@ -1,5 +1,9 @@
+// @ts-nocheck
 import React, { useState, useEffect, useCallback} from 'react';
 import banner from './assets/screenshot-2025-11-25_23-18-16.png'
+import pop from './assets/mixkit-hard-pop-click-2364.wav'
+import useSound from 'use-sound';
+import ending from './assets/ไม่มีชื่อ (1366 x 1024 px).png'
 import { 
   Zap, 
   LayoutGrid, 
@@ -155,9 +159,10 @@ const Dashboard = ({ setView }) => {
   const [timeoutId, setTimeoutId] = useState(null);
   const [script, setScript] = useState(0)
   const [endtitle, setEndtitle] = useState(false)
-
+  const [popSound] = useSound(pop)
   const fetchData = useCallback(async () => {
     try {
+       
       // NOTE: Replace this URL with your actual API endpoint
       const response = await fetch('https://shiny-sonia-burapat-c9f29e3d.koyeb.app/api/data');
       
@@ -191,29 +196,31 @@ const Dashboard = ({ setView }) => {
   })
   const handleInteraction = () => {
     if (gameState === 'idle' || gameState === 'clicked' || gameState === 'tooSoon') startWaiting();
-    else if (gameState === 'waiting' && script != 0) startScript();
+    // else if (gameState === 'waiting' && scriptnpm r != 0) startScript();
+    else if (gameState === 'ready' && script != 0) startScript();
     else if (gameState === 'waiting') triggerTooSoon();
     else if (gameState === 'ready') finishTest();
   };
   const startScript = ()=>{
-      setGameState('ready');
-      const id = setTimeout(() => {
+      // setGameState('ready');
+      // const id = setTimeout(() => {
         setReactionTime(script)
         setGameState('clicked');
-      }, script+25);
+      // }, script);
 
-      setTimeoutId(id);
+      // setTimeoutId(id);
+    
   }
   const startWaiting = () => {
     setGameState('waiting');
     setReactionTime(null);
-    const delay = Math.random() * 3000 + 2000;
-    if (script == 0) { // On script
+    const delay = Math.random() * 3000 + 1500;
+    // if (script == 0) { // On script
       const id = setTimeout(() => {
         setGameState('ready');
         setStartTime(Date.now());
       }, delay);
-    }
+    // }
  
     setTimeoutId(id);
   };
@@ -250,10 +257,11 @@ const Dashboard = ({ setView }) => {
         </div>
       );
       case 'ready':
-        
-        return (
-          <div> <div className="flex items-center w-full justify-center"><Ellipsis size={120} color='white'/></div>
+         popSound()
+      return (
           
+          <div> <div className="flex items-center w-full justify-center"><Ellipsis size={120} color='white'/></div>
+           
             <h1 className="text-center text-8xl md:text-8xl font-normal text-white">Click!</h1>
              
           </div>
@@ -286,9 +294,12 @@ const Dashboard = ({ setView }) => {
     }
   };
 
-  return (
-    <>
-      {endtitle ? (<h1 className="text-9xl font-black bg-black">Hello AJ. RUJ</h1>) : (<div ></div>)}
+  if (endtitle){
+    return <img src={ending} className='h-full w-full'/>
+  }
+  else {
+    return(
+      <>
       <CoreReactionTest 
         gameState={gameState}
         reactionTime={reactionTime}
@@ -316,7 +327,8 @@ const Dashboard = ({ setView }) => {
         </div>
       </div>
     </>
-  );
+    )
+  }
 };
 
 // Main App
@@ -325,8 +337,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f3fefb] font-sans ">
-      <nav className="bg-white shadow-sm border-b border-gray-200 h-10 flex items-center px-4 md:px-8 justify-center">
-        <div className="flex items-center gap-4 h-full mr-70">
+      <nav className="bg-white shadow-sm border-b border-gray-200 h-10 flex items-center px-4 md:px-8 justify-between">
+        <div className="flex items-center gap-4 h-full">
           <Zap className="w-8 h-8 fill-[#CAC9C8]" />
           <span className="text-l font text-gray-700 mr hover:bg-gray-100  cursor-pointer h-full items-center flex duration-150 ">HUMAN BENCHMARK</span>
           <span className="text-l font text-gray-700 hover:bg-gray-100  cursor-pointer h-full items-center flex duration-150">DASHBOARD</span>
